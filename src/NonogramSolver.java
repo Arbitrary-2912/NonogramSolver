@@ -129,7 +129,7 @@ public class NonogramSolver {
             // Forward row pass
             for (int i = 0; i < rows.size(); i++) {
                 var r = rows.get(i);
-                if (true /*rows.get(i).state != STATE.SOLVED */) {
+                if (rows.get(i).state != STATE.SOLVED) {
                     r.update(matrix[i]);
                     rows.set(i, r);
                     matrix[i] = rows.get(i).values;
@@ -146,7 +146,7 @@ public class NonogramSolver {
             // Forward column pass
             for (int i = 0; i < columns.size(); i++) {
                 var c = columns.get(i);
-                if (true /*columns.get(i).state != STATE.SOLVED*/) {
+                if (columns.get(i).state != STATE.SOLVED) {
                     int[] m = new int[height];
                     for (int j = 0; j < rows.size(); j++) {
                         m[j] = matrix[j][i];
@@ -281,7 +281,7 @@ public class NonogramSolver {
                 values = findCommonalities(possibilities.size() - 1, possibilities.get(possibilities.size() - 1).values);
             else if (possibilities.size() == 1) {
                 values = possibilities.get(0).values;
-                possibilities.add(new NonogramLine(values, params, (Arrays.asList(values).contains(-1)) ? STATE.SOLVED: STATE.UNSOLVED));
+                possibilities.add(new NonogramLine(values, params, (Arrays.asList(values).contains(-1)) ? STATE.SOLVED : STATE.UNSOLVED));
             }
 
             if (Arrays.asList(values).contains(-1)) {

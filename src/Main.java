@@ -5,18 +5,21 @@ import java.util.Scanner;
 
 /**
  * Main entry class providing a terminal-based interface for solving nonogram puzzles.
+ *
  * @see NonogramSolver
  */
 public class Main {
 
     /**
      * Static scanner for data collection
+     *
      * @see Scanner
      */
     static Scanner s = new Scanner(System.in);
 
     /**
      * Main method. Initializes and executes solver from collected inputs
+     *
      * @param args
      * @see Main#collectIntData(String)
      * @see Main#collectArrayData(String)
@@ -42,6 +45,7 @@ public class Main {
 
     /**
      * Input collection wrapper
+     *
      * @param msg - query message
      * @return int data
      */
@@ -52,6 +56,7 @@ public class Main {
 
     /**
      * Input collection wrapper
+     *
      * @param msg - query message
      * @return int list data
      */

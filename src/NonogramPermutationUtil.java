@@ -1,4 +1,6 @@
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class NonogramPermutationUtil {
     static Map<Integer, Character> cim = new HashMap<>();
@@ -8,9 +10,10 @@ public class NonogramPermutationUtil {
 
     /**
      * Base instantiation of utility object
-     * @param r_min minimum value of any entry in permutation
-     * @param r_max maximum value of any entry in permutation
-     * @param m_sum maximum sum of all values in permutation
+     *
+     * @param r_min      minimum value of any entry in permutation
+     * @param r_max      maximum value of any entry in permutation
+     * @param m_sum      maximum sum of all values in permutation
      * @param arr_length number of entries in permutation
      */
     public NonogramPermutationUtil(int r_min, int r_max, int m_sum, int arr_length) {
@@ -24,7 +27,7 @@ public class NonogramPermutationUtil {
         }
         String str = "";
         for (int i = r_min; i <= r_max; i++) { // 0 is the minimum, 15 is the maximum sequence
-            str+=cim.get(i);
+            str += cim.get(i);
         }
         permutation(perm, 0, str, m_sum);
     }
@@ -42,9 +45,10 @@ public class NonogramPermutationUtil {
 
     /**
      * Calculates all permutations
-     * @param perm permutation frame array
-     * @param pos position on array for iteration
-     * @param str string of all possible permutation entry characters
+     *
+     * @param perm  permutation frame array
+     * @param pos   position on array for iteration
+     * @param str   string of all possible permutation entry characters
      * @param M_sum maximum sum (verification measure)
      */
     private void permutation(char[] perm, int pos, String str, int M_sum) {
@@ -66,15 +70,16 @@ public class NonogramPermutationUtil {
                 }
             }
         } else {
-            for (int i = 0 ; i < str.length() ; i++) {
+            for (int i = 0; i < str.length(); i++) {
                 perm[pos] = str.charAt(i);
-                permutation(perm, pos+1, str, M_sum);
+                permutation(perm, pos + 1, str, M_sum);
             }
         }
     }
 
     /**
      * Returns list of permutations per parameters
+     *
      * @return permutations
      */
     ArrayList<Integer[]> getPermutations() {
@@ -83,13 +88,14 @@ public class NonogramPermutationUtil {
 
     /**
      * Calculates the sum of an array of chars
+     *
      * @param perm array
      * @return sum of array
      */
     private int getSum(char[] perm) {
         var s = 0;
-        for (char p: perm) {
-            s += p-48;
+        for (char p : perm) {
+            s += p - 48;
         }
         return s;
     }
