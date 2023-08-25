@@ -1,6 +1,5 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -127,28 +126,30 @@ public class NonogramSolver {
          */
         private void update() {
             state = STATE.SOLVED;
+            // Forward row pass
             for (int i = 0; i < rows.size(); i++) {
                 var r = rows.get(i);
-                if (rows.get(i).state != STATE.SOLVED) {
+                if (true /*rows.get(i).state != STATE.SOLVED */) {
                     r.update(matrix[i]);
                     rows.set(i, r);
                     matrix[i] = rows.get(i).values;
                 }
                 if (rows.get(i).state == STATE.UNSOLVED) {
                     state = STATE.UNSOLVED;
+                    continue;
                 }
                 if (rows.get(i).state == STATE.IMPOSSIBLE) {
                     state = STATE.IMPOSSIBLE;
                     return;
                 }
             }
-            if (state == STATE.SOLVED) return;
+            // Forward column pass
             for (int i = 0; i < columns.size(); i++) {
                 var c = columns.get(i);
-                if (columns.get(i).state != STATE.SOLVED) {
+                if (true /*columns.get(i).state != STATE.SOLVED*/) {
                     int[] m = new int[height];
                     for (int j = 0; j < rows.size(); j++) {
-                        m[i] = matrix[j][i];
+                        m[j] = matrix[j][i];
                     }
                     c.update(m);
                     columns.set(i, c);
@@ -158,6 +159,7 @@ public class NonogramSolver {
                 }
                 if (columns.get(i).state == STATE.UNSOLVED) {
                     state = STATE.UNSOLVED;
+                    continue;
                 }
                 if (columns.get(i).state == STATE.IMPOSSIBLE) {
                     state = STATE.IMPOSSIBLE;
@@ -166,7 +168,7 @@ public class NonogramSolver {
             }
         }
 
-        public int[][] getMatrix () {
+        public int[][] getMatrix() {
             return matrix;
         }
 
@@ -249,6 +251,25 @@ public class NonogramSolver {
         private void update(int[] v) {
             // Update values
             values = v;
+            possibilities.clear();
+            // Check if already solved or is still unsolved
+            if (Arrays.asList(v).contains(-1)) {
+                state = STATE.UNSOLVED;
+            } else {
+                ArrayList<Integer> v_segmented = new ArrayList<>();
+                for (int i = 0; i < v.length; i++) {
+                    if (v[i] == 1) {
+                        if (i > 0 && v[i] == v[i - 1] && v[i] == 1)
+                            v_segmented.set(v_segmented.size() - 1, v_segmented.get(v_segmented.size() - 1) + 1);
+                        else if (v[i] == 1)
+                            v_segmented.add(1);
+                    }
+                }
+                if (v_segmented == params) {
+                    this.state = STATE.SOLVED;
+                    return;
+                }
+            }
 
             // Update states
             findPossibilities();
@@ -256,34 +277,40 @@ public class NonogramSolver {
                 this.state = STATE.IMPOSSIBLE;
                 return;
             }
-            values = findCommonalities();
-            if (!Arrays.asList(values).contains(-1)) {
-                this.state = STATE.SOLVED;
-            } else {
+            if (possibilities.size() > 1)
+                values = findCommonalities(possibilities.size() - 1, possibilities.get(possibilities.size() - 1).values);
+            else if (possibilities.size() == 1) {
+                values = possibilities.get(0).values;
+                possibilities.add(new NonogramLine(values, params, (Arrays.asList(values).contains(-1)) ? STATE.SOLVED: STATE.UNSOLVED));
+            }
+
+            if (Arrays.asList(values).contains(-1)) {
                 this.state = STATE.UNSOLVED;
+            } else {
+                this.state = STATE.SOLVED;
             }
         }
 
         /**
          * Recursively possibilities from current state
-
          */
         private void findPossibilities() {
             var v = values;
-            var m_sum = values.length-p_sum;
+            var m_sum = values.length - p_sum;
             var r_min = 0;
             var r_max = m_sum;
-            var length = (int) Math.ceil(params.size()/2d);
+            var length = (int) Math.ceil(params.size() / 2d);
 
             // Calculate all Possibilities with Permutation Util
             NonogramPermutationUtil util = new NonogramPermutationUtil(r_min, r_max, m_sum, length);
             var permutations = util.getPermutations();
             // Verify all Possibilities
-            main_loop: for (var p: permutations) {
+            main_loop:
+            for (var p : permutations) {
                 ArrayList<Integer> formattedPermutation = new ArrayList<>();
                 for (int i = 0; i < params.size(); i++) {
-                    if (i%2==0) {
-                        formattedPermutation.add(p[i/2]);
+                    if (i % 2 == 0) {
+                        formattedPermutation.add(p[i / 2]);
                     } else {
                         formattedPermutation.add(params.get(i));
                     }
@@ -293,7 +320,7 @@ public class NonogramSolver {
                 int[] permutationValues = new int[values.length];
                 int tp_sum = 0;
                 for (int i = 0; i < formattedPermutation.size(); i++) { // Populates actual value array
-                    Arrays.fill(permutationValues, tp_sum, tp_sum+formattedPermutation.get(i), (i%2==0)?0:1);
+                    Arrays.fill(permutationValues, tp_sum, tp_sum + formattedPermutation.get(i), (i % 2 == 0) ? 0 : 1);
                     tp_sum += formattedPermutation.get(i);
                 }
                 // Now it is intended to corroborate whether the permutation matches with the actual values, ie if there is a 0 in the permutation value at an index, there isn't a 1 there in the original array or vice versa
@@ -318,23 +345,27 @@ public class NonogramSolver {
         /**
          * Back-propagates to find commonalities in all possibilities
          */
-        private int[] findCommonalities() {
-            int[] v = values;
-            a:
-            for (int i = 0; i < possibilities.size(); i++) {
-                var x = possibilities.get(i);
-                b:
-                for (int j = 0; j < v.length; j++) {
-                    int cur = x.values[j];
-
-                    if (v[j] == -1 && cur != x.values[j]) {
-                        continue;
-                    }
-
-                    v[j] = cur;
+        private int[] findCommonalities(int i, int[] cur) {
+            if (i == 1) {
+                for (int x = 0; x < cur.length; x++) {
+                    cur[x] = (cur[x] == possibilities.get(0).values[x]) ? cur[x] : -1;
                 }
+                return cur;
+            } else {
+                var dur = possibilities.get(i - 1).values;
+                boolean end_condition = true;
+                for (int x = 0; x < cur.length; x++) {
+                    cur[x] = (cur[x] == dur[x]) ? cur[x] : -1;
+                    if (cur[x] != -1) {
+                        end_condition = false;
+                    }
+                }
+                if (end_condition) {
+                    return cur;
+                }
+
+                return findCommonalities(i - 1, cur);
             }
-            return v;
         }
     }
 
