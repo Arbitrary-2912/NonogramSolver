@@ -6,10 +6,9 @@ import java.util.List;
  * Class for solving nongrams.
  */
 public class NonogramSolver {
-    private STATE state; // State of solver
     private int[][] matrix; // Matrix: 1 denotes filled, 0 denotes unfilled, -1 denotes undecided
     private ArrayList<ArrayList<Integer>> row_params, column_params;
-    protected Nonogram nonogram;
+    protected static Nonogram nonogram;
 
     /**
      * Base constructor, initializes solver
@@ -19,7 +18,7 @@ public class NonogramSolver {
      * @param column_params column segments
      */
     public NonogramSolver(List<Integer> dims, ArrayList<ArrayList<Integer>> row_params, ArrayList<ArrayList<Integer>> column_params) {
-        state = STATE.UNSOLVED;
+        STATE state = STATE.UNSOLVED;
         matrix = new int[dims.get(1)][dims.get(0)];
         for (int i = 0; i < matrix.length; i++) {
             Arrays.fill(matrix[i], -1);
@@ -56,6 +55,7 @@ public class NonogramSolver {
         private STATE state;
         private List<NonogramLine> rows;
         private List<NonogramLine> columns;
+        private ArrayList<ArrayList<Integer>> row_params, column_params;
 
         private int width; // number of columns
         private int height; // number of rows
@@ -73,6 +73,8 @@ public class NonogramSolver {
             state = s;
             rows = new ArrayList<NonogramLine>();
             columns = new ArrayList<NonogramLine>();
+            row_params = r_params;
+            column_params = c_params;
 
             width = m[0].length;
             height = m.length;
@@ -165,6 +167,26 @@ public class NonogramSolver {
                     state = STATE.IMPOSSIBLE;
                     return;
                 }
+            }
+            boolean ff2 = false;
+            for (var a : matrix) {
+                for (var b : a) {
+                    if (b == -1) ff2 = true;
+                }
+            }
+            if (ff2) {
+                state = STATE.UNSOLVED;
+                for (int i = 0; i < rows.size(); i++) {
+                    var tmp = rows.get(i);
+                    tmp.state = STATE.UNSOLVED;
+                    rows.set(i, tmp);
+                }
+                for (int i = 0; i < columns.size(); i++) {
+                    var tmp = columns.get(i);
+                    tmp.state = STATE.UNSOLVED;
+                    columns.set(i, tmp);
+                }
+//                update(); // recurse
             }
         }
 
